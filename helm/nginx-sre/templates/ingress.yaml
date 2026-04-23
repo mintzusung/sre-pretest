@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "nginx-sre.fullname" . }}
+  labels:
+    app: {{ include "nginx-sre.fullname" . }}
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "nginx-sre.fullname" . }}
+                port:
+                  number: {{ .Values.service.port }}
