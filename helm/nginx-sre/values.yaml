@@ -1,4 +1,4 @@
-replicaCount: 1 # replicaCount 由 HPA 控制，啟用 autoscaling 時此值僅作為初始值
+replicaCount: 1  # replicaCount 由 HPA 控制，啟用 autoscaling 時此值僅作為初始值
 
 image:
   repository: placeholder  # 由 CI/CD 動態覆蓋
@@ -22,6 +22,7 @@ autoscaling:
   minReplicas: 1
   maxReplicas: 3
   targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 75
 
 nameOverride: ""
 fullnameOverride: ""
