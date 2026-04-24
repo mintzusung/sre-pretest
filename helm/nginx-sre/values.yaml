@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: 071750954579.dkr.ecr.ap-southeast-2.amazonaws.com/nginx-sre
+  repository: placeholder  # 由 CI/CD 動態覆蓋
   tag: "latest"
   pullPolicy: IfNotPresent
 
