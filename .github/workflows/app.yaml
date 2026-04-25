@@ -1,10 +1,14 @@
 name: Build and Deploy
 
-# 觸發條件：push 到 main branch 時觸發
+# 觸發條件：不同 branch 對應不同環境
 on:
   push:
     branches:
-      - main
+      - main              # → alpha 環境
+      - release/beta      # → beta 環境
+      - release/staging   # → staging 環境
+  release:
+    types: [published]    # → production 環境（打 tag 時觸發）
 
 env:
   AWS_REGION: ap-southeast-2
@@ -38,7 +42,7 @@ jobs:
         run: |
           docker build -t $ECR_REPOSITORY ./docker
 
-      # Step 5: Tag 並 Push image 到 ECR
+      # Step 5: Tag 並 Push image 到 ECR（使用 commit sha 確保每次唯一）
       - name: Push image to ECR
         run: |
           ECR_URI=${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY
@@ -58,10 +62,26 @@ jobs:
       - name: Install Helm
         uses: azure/setup-helm@v4
 
-      # Step 8: Deploy 到 EKS
+      # Step 8: 根據 branch 或 tag 判斷部署環境
+      - name: Set environment
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "ENV=alpha" >> $GITHUB_ENV
+          elif [[ "${{ github.ref }}" == "refs/heads/release/beta" ]]; then
+            echo "ENV=beta" >> $GITHUB_ENV
+          elif [[ "${{ github.ref }}" == "refs/heads/release/staging" ]]; then
+            echo "ENV=staging" >> $GITHUB_ENV
+          elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            echo "ENV=production" >> $GITHUB_ENV
+          fi
+
+      # Step 9: 使用環境專屬 values.yaml 部署到對應 namespace
       - name: Deploy to EKS
         run: |
           ECR_URI=${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY
-          helm upgrade --install nginx-sre helm/nginx-sre \
+          helm upgrade --install ${{ env.ENV }} helm/nginx-sre \
+            -f envs/${{ env.ENV }}/values.yaml \
+            --namespace ${{ env.ENV }} \
+            --create-namespace \
             --set image.repository=$ECR_URI \
             --set image.tag=${{ github.sha }}
