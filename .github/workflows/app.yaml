@@ -11,7 +11,7 @@ on:
     types: [published]    # → production 環境（打 tag 時觸發）
 
 env:
-  AWS_REGION: ap-southeast-2
+  AWS_REGION: us-east-1
   ECR_REPOSITORY: nginx-sre
   EKS_CLUSTER_NAME: sre-pretest-cluster
 
