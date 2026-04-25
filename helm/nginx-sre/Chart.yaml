@@ -3,4 +3,4 @@ name: nginx-sre
 description: A Helm chart for deploying custom nginx with sre.txt
 type: application
 version: 0.1.0
-appVersion: "nginx-sre-1.0.0"
+appVersion: "1.0.0"
