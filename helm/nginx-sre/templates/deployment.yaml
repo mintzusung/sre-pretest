@@ -21,7 +21,7 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            - containerPort: 80
+            - containerPort: {{ .Values.containerPort }}
           resources:
             requests:
               cpu: {{ .Values.resources.requests.cpu }}
@@ -29,3 +29,17 @@ spec:
             limits:
               cpu: {{ .Values.resources.limits.cpu }}
               memory: {{ .Values.resources.limits.memory }}
+          # 確認 sre.txt 存在且可訪問才接收流量
+          readinessProbe:
+            httpGet:
+              path: /sre.txt
+              port: {{ .Values.containerPort }}
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          # 定期確認服務存活，異常時自動重啟
+          livenessProbe:
+            httpGet:
+              path: /sre.txt
+              port: {{ .Values.containerPort }}
+            initialDelaySeconds: 10
+            periodSeconds: 10
